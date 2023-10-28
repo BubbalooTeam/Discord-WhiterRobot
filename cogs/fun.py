@@ -220,9 +220,9 @@ class Fun(commands.Cog, name="fun"):
         try:
             yt = ydl.extract_info(url, download=True)
         except BaseException as e:
-            await msg.edit("<b>Error:</b> <i>{}</i>".format(e))
+            await context.reply("<b>Error:</b> <i>{}</i>".format(e))
             return
-        await msg.edit("**Uploading...**")
+        await context.reply("**Uploading...**")
         filename = ydl.prepare_filename(yt)
         thumb = io.BytesIO((await http.get(yt["thumbnail"])).content)
         thumb.name = "thumbnail.png"
@@ -233,7 +233,7 @@ class Fun(commands.Cog, name="fun"):
         if yt.get("like_count"):
             likes += yt["like_count"]
         try:
-            await ctx.send(
+            await context.send(
                 ("<b><a href={}>{}</a></b>\n<b>❯ Duration:</b> <i>{}</i>\n<b>❯ Channel:</b> <i>{}</i>\n<b>❯ Views:</b> <i>{}</i>\n<b>❯ Likes:</b> <i>{}</i>").format(
                     url or "",
                     temp + yt["title"],
@@ -242,11 +242,11 @@ class Fun(commands.Cog, name="fun"):
                     views,
                     likes
                     ),
-                    file=discord.File(filename, filename=filename),
-                    reference=ctx.message.reference,
+                    file=discord.File(filename, filename=yt["title"]),
+                    reference=context.message.reference,
                 )
         except discord.errors.HTTPException as e:
-            await ctx.send("Erro ao enviar o vídeo: {errmsg}".format(errmsg=e))
+            await context.reply("Erro ao enviar o vídeo: {errmsg}".format(errmsg=e))
 
 async def setup(bot) -> None:
     await bot.add_cog(Fun(bot))
