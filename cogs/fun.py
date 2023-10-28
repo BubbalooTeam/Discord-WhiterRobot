@@ -212,7 +212,7 @@ class Fun(commands.Cog, name="fun"):
             {
                 "outtmpl": f"{path}/%(title)s-%(id)s.%(ext)s",
                 "format": f"{vformat}+140",
-                "max_filesize": MAX_FILESIZE,
+                "max_filesize": 1000000000,
                 "noplaylist": True,
             }
         )
