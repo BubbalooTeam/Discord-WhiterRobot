@@ -237,7 +237,7 @@ class Fun(commands.Cog, name="fun"):
             await context.send(
                 ("<b><a href={}>{}</a></b>\n<b>❯ Duration:</b> <i>{}</i>\n<b>❯ Channel:</b> <i>{}</i>\n<b>❯ Views:</b> <i>{}</i>\n<b>❯ Likes:</b> <i>{}</i>").format(
                     url or "",
-                    temp + yt["title"],
+                    yt["title"],
                     datetime.timedelta(seconds=yt["duration"]) or 0,
                     yt["channel"] or None,
                     views,
