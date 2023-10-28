@@ -170,7 +170,7 @@ class Fun(commands.Cog, name="fun"):
         view = RockPaperScissorsView()
         await context.send("Please make your choice", view=view)
 
-    @commands.hybrid_commands(
+    @commands.hybrid_command(
         name="media", description="Get a video from YouTube"
     )
     async def download_video(self, context: Context) -> None:
