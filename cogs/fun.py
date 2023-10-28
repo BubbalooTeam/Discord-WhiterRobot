@@ -6,13 +6,23 @@ Description:
 Version: 6.1.0
 """
 
+import io
+import os
+import re
 import random
+import shutil
+import tempfile
+import datetime
+import asyncio
+import contextlib
+import filetype
 
 import aiohttp
 import discord
 from discord.ext import commands
 from discord.ext.commands import Context
 
+from yt_dlp import YoutubeDL
 
 class Choice(discord.ui.View):
     def __init__(self) -> None:
@@ -96,6 +106,8 @@ class RockPaperScissorsView(discord.ui.View):
 class Fun(commands.Cog, name="fun"):
     def __init__(self, bot) -> None:
         self.bot = bot
+        self.YOUTUBE_REGEX = re.compile(r"(?m)http(?:s?):\/\/(?:www\.)?(?:music\.)?youtu(?:be\.com\/(watch\?v=|shorts/|embed/)|\.be\/|)([\w\-\_]*)(&(amp;)?‌​[\w\?‌​=]*)?")
+        self.TIME_REGEX = re.compile(r"[?&]t=([0-9]+)")
 
     @commands.hybrid_command(name="randomfact", description="Get a random fact.")
     async def randomfact(self, context: Context) -> None:
@@ -158,6 +170,83 @@ class Fun(commands.Cog, name="fun"):
         view = RockPaperScissorsView()
         await context.send("Please make your choice", view=view)
 
+    @commands.hybrid_commands(
+        name="media", description="Get a video from YouTube"
+    )
+    async def download_video(self, context: Context) -> None:
+        if context.message.reference and context.message.reference.resolved.text:
+            url = context.message.reference.resolved.text
+        elif len(context.message.content) > len(context.prefix) + len(context.command.name):
+            url = context.message.content.split(None, 1)[1]
+        else:
+            await context.reply("__You want me to turn the wind down?__")
+            return
+        #Requests yt_dlp
+        ydl = YoutubeDL({"noplaylist": True})
+        
+        rege = self.YOUTUBE_REGEX.match(url)
+        t = self.TIME_REGEX.search(url)
+        
+        temp = t.group(1) if t else 0
+
+        if not rege:
+            yt = ydl.extract_info(f"ytsearch:{url}", download=False)
+            try:
+                yt = yt["entries"][0]
+            except IndexError:
+                return
+        else:
+            yt = ydl.extract_info(rege.group(), download=False)
+
+        for f in yt["formats"]:
+            with contextlib.suppress(KeyError):
+                if f["format_id"] == "140":
+                    afsize = f["filesize"] or 0
+                if f["ext"] == "mp4" and f["filesize"] is not None:
+                    vfsize = f["filesize"] or 0
+                    vformat = f["format_id"]
+        await context.reply("**Downloading...**")
+        with tempfile.TemporaryDirectory() as tempdir:
+            path = os.path.join(tempdir, "ytdl")
+        ydl = YoutubeDL(
+            {
+                "outtmpl": f"{path}/%(title)s-%(id)s.%(ext)s",
+                "format": f"{vformat}+140",
+                "max_filesize": MAX_FILESIZE,
+                "noplaylist": True,
+            }
+        )
+
+        try:
+            yt = ydl.extract_info(url, download=True)
+        except BaseException as e:
+            await context.edit("<b>Error:</b> <i>{}</i>".format(e))
+            return
+        await context.edit("**Uploading...**")
+        filename = ydl.prepare_filename(yt)
+        thumb = io.BytesIO((await http.get(yt["thumbnail"])).content)
+        thumb.name = "thumbnail.png"
+        views = 0
+        likes = 0
+        if yt.get("view_count"):
+            views += yt["view_count"]
+        if yt.get("like_count"):
+            likes += yt["like_count"]
+        try:
+            await ctx.send(
+                ("<b><a href={}>{}</a></b>\n<b>❯ Duration:</b> <i>{}</i>\n<b>❯ Channel:</b> <i>{}</i>\n<b>❯ Views:</b> <i>{}</i>\n<b>❯ Likes:</b> <i>{}</i>").format(
+                    url or "",
+                    temp + yt["title"],
+                    datetime.timedelta(seconds=yt["duration"]) or 0,
+                    yt["channel"] or None,
+                    views,
+                    likes
+                    ),
+                    file=discord.File(filename, filename=filename),
+                    reference=ctx.message.reference,
+                )
+            except discord.errors.HTTPException as e:
+                await ctx.send("Erro ao enviar o vídeo: {errmsg}".format(errmsg=e))
 
 async def setup(bot) -> None:
     await bot.add_cog(Fun(bot))
