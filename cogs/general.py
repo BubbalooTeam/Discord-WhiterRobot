@@ -128,7 +128,10 @@ class General(commands.Cog, name="general"):
 
         :param context: The hybrid command context.
         """
-        roles = [role.name for role in context.guild.roles]
+        try:
+            roles = [role.name for role in context.guild.roles]
+        except Exception:
+            roles = []
         if len(roles) > 50:
             roles = roles[:50]
             roles.append(f">>>> Displayin [50/{len(roles)}] Roles")
@@ -185,25 +188,6 @@ class General(commands.Cog, name="general"):
         except discord.Forbidden:
             await context.send(embed=embed)
 
-    @commands.hybrid_command(
-        name="server",
-        description="Get the invite link of the discord server of the bot for some support.",
-    )
-    async def server(self, context: Context) -> None:
-        """
-        Get the invite link of the discord server of the bot for some support.
-
-        :param context: The hybrid command context.
-        """
-        embed = discord.Embed(
-            description=f"Join the support server for the bot by clicking [here](https://discord.gg/mTBrXyWxAF).",
-            color=0xD75BF4,
-        )
-        try:
-            await context.author.send(embed=embed)
-            await context.send("I sent you a private message!")
-        except discord.Forbidden:
-            await context.send(embed=embed)
 
     @commands.hybrid_command(
         name="8ball",
