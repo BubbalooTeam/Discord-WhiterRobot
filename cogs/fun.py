@@ -205,7 +205,7 @@ class Fun(commands.Cog, name="fun"):
                 if f["ext"] == "mp4" and f["filesize"] is not None:
                     vfsize = f["filesize"] or 0
                     vformat = f["format_id"]
-        await context.reply("**Downloading...**")
+        msg = await context.reply("**Downloading...**")
         with tempfile.TemporaryDirectory() as tempdir:
             path = os.path.join(tempdir, "ytdl")
         ydl = YoutubeDL(
@@ -222,7 +222,7 @@ class Fun(commands.Cog, name="fun"):
         except BaseException as e:
             await context.edit("<b>Error:</b> <i>{}</i>".format(e))
             return
-        await context.edit("**Uploading...**")
+        await msg.edit("**Uploading...**")
         filename = ydl.prepare_filename(yt)
         thumb = io.BytesIO((await http.get(yt["thumbnail"])).content)
         thumb.name = "thumbnail.png"
