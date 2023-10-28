@@ -220,7 +220,7 @@ class Fun(commands.Cog, name="fun"):
         try:
             yt = ydl.extract_info(url, download=True)
         except BaseException as e:
-            await context.edit("<b>Error:</b> <i>{}</i>".format(e))
+            await msg.edit("<b>Error:</b> <i>{}</i>".format(e))
             return
         await msg.edit("**Uploading...**")
         filename = ydl.prepare_filename(yt)
