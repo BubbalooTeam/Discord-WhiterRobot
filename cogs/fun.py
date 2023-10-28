@@ -16,6 +16,7 @@ import datetime
 import asyncio
 import contextlib
 import filetype
+import requests
 
 import aiohttp
 import discord
@@ -224,7 +225,7 @@ class Fun(commands.Cog, name="fun"):
             return
         await context.reply("**Uploading...**")
         filename = ydl.prepare_filename(yt)
-        thumb = io.BytesIO((await http.get(yt["thumbnail"])).content)
+        thumb = io.BytesIO((requests.get(yt["thumbnail"])).content)
         thumb.name = "thumbnail.png"
         views = 0
         likes = 0
