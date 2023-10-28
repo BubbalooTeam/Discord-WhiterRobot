@@ -245,8 +245,8 @@ class Fun(commands.Cog, name="fun"):
                     file=discord.File(filename, filename=filename),
                     reference=ctx.message.reference,
                 )
-            except discord.errors.HTTPException as e:
-                await ctx.send("Erro ao enviar o vídeo: {errmsg}".format(errmsg=e))
+        except discord.errors.HTTPException as e:
+            await ctx.send("Erro ao enviar o vídeo: {errmsg}".format(errmsg=e))
 
 async def setup(bot) -> None:
     await bot.add_cog(Fun(bot))
