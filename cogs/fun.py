@@ -206,7 +206,11 @@ class Fun(commands.Cog, name="fun"):
                 if f["ext"] == "mp4" and f["filesize"] is not None:
                     vfsize = f["filesize"] or 0
                     vformat = f["format_id"]
+                    
+        data = yt["id"]
+        
         msg = await context.reply("**Downloading...**")
+        url = f"https://www.youtube.com/watch?v={data}"
         with tempfile.TemporaryDirectory() as tempdir:
             path = os.path.join(tempdir, "ytdl")
         ydl = YoutubeDL(
