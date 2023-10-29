@@ -260,7 +260,7 @@ class Fun(commands.Cog, name="fun"):
     @commands.hybrid_command(
         name="song", description="Get a audio from YouTube"
     )
-    async def download_video(self, context: Context) -> None:
+    async def download_audio(self, context: Context) -> None:
         if context.message.reference and context.message.reference.resolved.content:
             url = context.message.reference.resolved.content
         elif len(context.message.content) > len(context.prefix) + len(context.command.name):
