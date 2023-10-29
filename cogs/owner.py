@@ -341,7 +341,6 @@ class Owner(commands.Cog, name="owner"):
         name="up",
         description="Updater from WhiterRobot.",
     )
-    @app_commands.describe(message="A Updater from WhiterRobot with search from updates in GitHub")
     @commands.is_owner()
     async def updater(self, context: Context):
         msg_ = await context.reply("__Updating Please Wait!__")
@@ -382,7 +381,6 @@ class Owner(commands.Cog, name="owner"):
         name="restart",
         description="Restarter from WhiterRobot.",
     )
-    @app_commands.describe(message="A Restarter from WhiterRobot")
     @commands.is_owner()
     async def rr(self, context: Context):
         sent = await context.reply("__Restarting...__") 
