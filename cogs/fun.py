@@ -206,7 +206,7 @@ class Fun(commands.Cog, name="fun"):
                 if f["ext"] == "mp4" and f["filesize"] is not None:
                     vfsize = f["filesize"] or 0
                     vformat = f["format_id"]
-        msg = await context.send("**Downloading...**")
+        msg = await context.reply("**Downloading...**")
         with tempfile.TemporaryDirectory() as tempdir:
             path = os.path.join(tempdir, "ytdl")
         ydl = YoutubeDL(
@@ -217,13 +217,13 @@ class Fun(commands.Cog, name="fun"):
                 "noplaylist": True,
             }
         )
-
+        await msg.delete()
         try:
             yt = ydl.extract_info(url, download=True)
         except BaseException as e:
-            await msg.edit("<b>Error:</b> <i>{}</i>".format(e))
+            await context.reply("<b>Error:</b> <i>{}</i>".format(e))
             return
-        await msg.edit("**Uploading...**")
+        msg = await context.reply("**Uploading...**")
         filename = ydl.prepare_filename(yt)
         thumb = io.BytesIO((requests.get(yt["thumbnail"])).content)
         thumb.name = "thumbnail.png"
