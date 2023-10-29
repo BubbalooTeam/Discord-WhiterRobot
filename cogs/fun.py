@@ -208,6 +208,10 @@ class Fun(commands.Cog, name="fun"):
                     vformat = f["format_id"]
                     
         data = yt["id"]
+
+        if int(vfsize) >= 8000000:
+            await context.reply("This media exceeds Discord's limit")
+            return
         
         msg = await context.reply("**Downloading...**")
         url = f"https://www.youtube.com/watch?v={data}"
@@ -251,7 +255,93 @@ class Fun(commands.Cog, name="fun"):
                     reference=context.message.reference,
                 )
         except discord.errors.HTTPException as e:
-            await context.send("Erro ao enviar o vídeo: {errmsg}".format(errmsg=e))
+            await context.send("Error in send media: {errmsg}".format(errmsg=e))
+
+    @commands.hybrid_command(
+        name="song", description="Get a audio from YouTube"
+    )
+    async def download_video(self, context: Context) -> None:
+        if context.message.reference and context.message.reference.resolved.content:
+            url = context.message.reference.resolved.content
+        elif len(context.message.content) > len(context.prefix) + len(context.command.name):
+            url = context.message.content.split(None, 1)[1]
+        else:
+            await context.reply("__You want me to turn the wind down?__")
+            return
+        #Requests yt_dlp
+        ydl = YoutubeDL({"noplaylist": True})
+        
+        rege = self.YOUTUBE_REGEX.match(url)
+        t = self.TIME_REGEX.search(url)
+        
+        temp = t.group(1) if t else 0
+
+        if not rege:
+            yt = ydl.extract_info(f"ytsearch:{url}", download=False)
+            try:
+                yt = yt["entries"][0]
+            except IndexError:
+                return
+        else:
+            yt = ydl.extract_info(rege.group(), download=False)
+
+        for f in yt["formats"]:
+            with contextlib.suppress(KeyError):
+                if f["format_id"] == "140":
+                    afsize = f["filesize"] or 0
+                if f["ext"] == "mp4" and f["filesize"] is not None:
+                    vfsize = f["filesize"] or 0
+                    vformat = f["format_id"]
+                    
+        data = yt["id"]
+
+        if int(afsize) >= 8000000:
+            await context.reply("This media exceeds Discord's limit")
+            return
+        
+        msg = await context.reply("**Downloading...**")
+        url = f"https://www.youtube.com/watch?v={data}"
+        with tempfile.TemporaryDirectory() as tempdir:
+            path = os.path.join(tempdir, "ytdl")
+        ydl = YoutubeDL(
+            {
+                "outtmpl": f"{path}/%(title)s-%(id)s.%(ext)s",
+                "format": "bestaudio[ext=m4a]",
+                "max_filesize": 8000000,
+                "noplaylist": True,
+            }
+        )
+        await msg.delete()
+        try:
+            yt = ydl.extract_info(url, download=True)
+        except BaseException as e:
+            await context.reply("<b>Error:</b> <i>{}</i>".format(e))
+            return
+        msg = await context.reply("**Uploading...**")
+        filename = ydl.prepare_filename(yt)
+        thumb = io.BytesIO((requests.get(yt["thumbnail"])).content)
+        thumb.name = "thumbnail.png"
+        views = 0
+        likes = 0
+        if yt.get("view_count"):
+            views += yt["view_count"]
+        if yt.get("like_count"):
+            likes += yt["like_count"]
+        await msg.delete()
+        try:
+            await context.send(
+                ("**❯ Title:** __{}__\n**❯ Duration:** __{}__\n**❯ Channel:** __{}__\n**❯ Views:** __{}__\n**❯ Likes:** __{}__").format(
+                    yt["title"],
+                    datetime.timedelta(seconds=yt["duration"]) or 0,
+                    yt["channel"] or None,
+                    views,
+                    likes
+                    ),
+                    file=discord.File(filename, filename=yt["title"] + ".m4a"),
+                    reference=context.message.reference,
+                )
+        except discord.errors.HTTPException as e:
+            await context.send("Error in send media: {errmsg}".format(errmsg=e))
 
 async def setup(bot) -> None:
     await bot.add_cog(Fun(bot))
