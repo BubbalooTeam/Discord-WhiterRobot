@@ -5,16 +5,27 @@ Description:
 
 Version: 6.1.0
 """
+import sys
+import os
+import asyncio 
+import subprocess
+import re
+import logging
 
 import discord
 from discord import app_commands
 from discord.ext import commands
 from discord.ext.commands import Context
 
+from git import Repo
+from git.exc import GitCommandError, InvalidGitRepositoryError
+
 
 class Owner(commands.Cog, name="owner"):
     def __init__(self, bot) -> None:
         self.bot = bot
+        self.BRANCH_ = "main"
+        self.REPO_ = "https://github.com/BubbalooTeam/Discord-WhiterRobot"
 
     @commands.command(
         name="sync",
@@ -326,6 +337,60 @@ class Owner(commands.Cog, name="owner"):
         )
         await context.send(embed=embed)
 
+    @commands.hybrid_command(
+        name="up",
+        description="Updater from WhiterRobot.",
+    )
+    @app_commands.describe(message="A Updater from WhiterRobot with search from updates in GitHub")
+    @commands.is_owner()
+    async def updater(self, context: Context):
+        msg_ = await context.reply("__Updating Please Wait!__")
+        try:
+            repo = Repo()
+        except GitCommandError:
+            await msg_.delete()
+            return await context.reply("__Invalid Git Command__")
+        except InvalidGitRepositoryError:
+            repo = Repo.init()
+            if "upstream" in repo.remotes:
+                origin = repo.remote("upstream")
+            else:
+                origin = repo.create_remote("upstream", self.REPO_)
+            origin.fetch()
+            repo.create_head(self.BRANCH_, origin.refs.master)
+            repo.heads.master.set_tracking_branch(origin.refs.master)
+            repo.heads.master.checkout(True)
+        if repo.active_branch.name != self.BRANCH_:
+            await msg_.delete()
+            return await context.reply("__error in update. please try again...__")
+        try:
+            repo.create_remote("upstream", self.REPO_)
+        except BaseException:
+            pass
+        ups_rem = repo.remote("upstream")
+        ups_rem.fetch(self.BRANCH_)
+        try:
+            ups_rem.pull(self.BRANCH_)
+        except GitCommandError:
+            repo.git.reset("--hard", "FETCH_HEAD")
+        await msg_.delete()
+        await context.reply("__Updated Sucessfully! Give Me A min To Restart!__")
+        args = [sys.executable, "-m", "bot"]
+        os.execle(sys.executable, *args, os.environ)
+        
+    @commands.hybrid_command(
+        name="restart",
+        description="Restarter from WhiterRobot.",
+    )
+    @app_commands.describe(message="A Restarter from WhiterRobot")
+    @commands.is_owner()
+    @WhiterX.on_message(filters.command("restart", Config.TRIGGER))
+    async def rr(self, context: Context):
+        sent = await context.reply("__Restarting...__") 
+        args = [sys.executable, "-m", "bot"]
+        await sent.delete()
+        await context.reply("**WhiterKang is now Restarted!**")
+        os.execl(sys.executable, *args)
 
 async def setup(bot) -> None:
     await bot.add_cog(Owner(bot))
