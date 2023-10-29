@@ -384,7 +384,6 @@ class Owner(commands.Cog, name="owner"):
     )
     @app_commands.describe(message="A Restarter from WhiterRobot")
     @commands.is_owner()
-    @WhiterX.on_message(filters.command("restart", Config.TRIGGER))
     async def rr(self, context: Context):
         sent = await context.reply("__Restarting...__") 
         args = [sys.executable, "-m", "bot"]
