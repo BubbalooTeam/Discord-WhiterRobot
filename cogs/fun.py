@@ -206,7 +206,7 @@ class Fun(commands.Cog, name="fun"):
                 if f["ext"] == "mp4" and f["filesize"] is not None:
                     vfsize = f["filesize"] or 0
                     vformat = f["format_id"]
-        msg = await context.reply("**Downloading...**")
+        msg = await context.send("**Downloading...**")
         with tempfile.TemporaryDirectory() as tempdir:
             path = os.path.join(tempdir, "ytdl")
         ydl = YoutubeDL(
@@ -221,9 +221,9 @@ class Fun(commands.Cog, name="fun"):
         try:
             yt = ydl.extract_info(url, download=True)
         except BaseException as e:
-            await context.reply("<b>Error:</b> <i>{}</i>".format(e))
+            await msg.edit("<b>Error:</b> <i>{}</i>".format(e))
             return
-        await context.reply("**Uploading...**")
+        await msg.edit("**Uploading...**")
         filename = ydl.prepare_filename(yt)
         thumb = io.BytesIO((requests.get(yt["thumbnail"])).content)
         thumb.name = "thumbnail.png"
@@ -233,11 +233,12 @@ class Fun(commands.Cog, name="fun"):
             views += yt["view_count"]
         if yt.get("like_count"):
             likes += yt["like_count"]
+        await msg.delete()
         try:
             await context.send(
-                ("<b><a href={}>{}</a></b>\n<b>❯ Duration:</b> <i>{}</i>\n<b>❯ Channel:</b> <i>{}</i>\n<b>❯ Views:</b> <i>{}</i>\n<b>❯ Likes:</b> <i>{}</i>").format(
-                    url or "",
+                ("**[{}]({})**\n**❯ Duration:** __{}__\n**❯ Channel:** __{}__\n**❯ Views:** __{}__\n**❯ Likes:** __{}__").format(
                     yt["title"],
+                    url or "",
                     datetime.timedelta(seconds=yt["duration"]) or 0,
                     yt["channel"] or None,
                     views,
@@ -247,7 +248,7 @@ class Fun(commands.Cog, name="fun"):
                     reference=context.message.reference,
                 )
         except discord.errors.HTTPException as e:
-            await context.reply("Erro ao enviar o vídeo: {errmsg}".format(errmsg=e))
+            await context.send("Erro ao enviar o vídeo: {errmsg}".format(errmsg=e))
 
 async def setup(bot) -> None:
     await bot.add_cog(Fun(bot))
