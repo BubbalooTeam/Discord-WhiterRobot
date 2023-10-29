@@ -243,7 +243,7 @@ class Fun(commands.Cog, name="fun"):
                     views,
                     likes
                     ),
-                    file=discord.File(filename, filename=yt["title"] + ."mp4"),
+                    file=discord.File(filename, filename=yt["title"] + ".mp4"),
                     reference=context.message.reference,
                 )
         except discord.errors.HTTPException as e:
