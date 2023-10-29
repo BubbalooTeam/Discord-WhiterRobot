@@ -236,15 +236,14 @@ class Fun(commands.Cog, name="fun"):
         await msg.delete()
         try:
             await context.send(
-                ("**[{}]({})**\n**❯ Duration:** __{}__\n**❯ Channel:** __{}__\n**❯ Views:** __{}__\n**❯ Likes:** __{}__").format(
+                ("**❯ Title:** __{}__\n**❯ Duration:** __{}__\n**❯ Channel:** __{}__\n**❯ Views:** __{}__\n**❯ Likes:** __{}__").format(
                     yt["title"],
-                    url or "",
                     datetime.timedelta(seconds=yt["duration"]) or 0,
                     yt["channel"] or None,
                     views,
                     likes
                     ),
-                    file=discord.File(filename, filename=yt["title"]),
+                    file=discord.File(filename, filename=yt["title"] + ."mp4"),
                     reference=context.message.reference,
                 )
         except discord.errors.HTTPException as e:
