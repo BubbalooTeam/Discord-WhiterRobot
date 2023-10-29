@@ -175,8 +175,8 @@ class Fun(commands.Cog, name="fun"):
         name="media", description="Get a video from YouTube"
     )
     async def download_video(self, context: Context) -> None:
-        if context.message.reference and context.message.reference.resolved.text:
-            url = context.message.reference.resolved.text
+        if context.message.reference and context.message.reference.resolved.context:
+            url = context.message.reference.resolved.context
         elif len(context.message.content) > len(context.prefix) + len(context.command.name):
             url = context.message.content.split(None, 1)[1]
         else:
